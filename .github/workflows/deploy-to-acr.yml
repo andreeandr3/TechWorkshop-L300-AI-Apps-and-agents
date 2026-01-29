@@ -1,0 +1,50 @@
+name: Deploy to Azure Container Registry
+
+# This workflow builds and deploys the application to Azure Container Registry
+# Required secrets:
+#   - ACR_LOGIN_SERVER: The Azure Container Registry server URL (e.g., myregistry.azurecr.io)
+#   - ACR_USERNAME: The Azure Container Registry username
+#   - ACR_PASSWORD: The Azure Container Registry password
+#   - ENV: Complete multi-line .env file content (see src/env_sample.txt for format)
+#
+# Security Note: Build arguments are visible in image history. The .env file is
+# baked into the image for convenience. For production, consider using Azure Key Vault
+# or injecting environment variables at runtime instead.
+
+on:
+  # Runs on pushes targeting the main branch
+  push:
+    branches: ["main"]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to Azure Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./src
+          push: true
+          tags: |
+            ${{ secrets.ACR_LOGIN_SERVER }}/techworkshop:${{ github.sha }}
+            ${{ secrets.ACR_LOGIN_SERVER }}/techworkshop:latest
+          build-args: |
+            ENV_CONTENT=${{ secrets.ENV }}
+          # Note: ENV secret should contain the complete multi-line .env file content
+          # See src/env_sample.txt for the expected format and required variables
