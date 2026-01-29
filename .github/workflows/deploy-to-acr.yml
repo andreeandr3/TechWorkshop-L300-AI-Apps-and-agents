@@ -1,5 +1,16 @@
 name: Deploy to Azure Container Registry
 
+# This workflow builds and deploys the application to Azure Container Registry
+# Required secrets:
+#   - ACR_LOGIN_SERVER: The Azure Container Registry server URL (e.g., myregistry.azurecr.io)
+#   - ACR_USERNAME: The Azure Container Registry username
+#   - ACR_PASSWORD: The Azure Container Registry password
+#   - ENV: Complete multi-line .env file content (see src/env_sample.txt for format)
+#
+# Security Note: Build arguments are visible in image history. The .env file is
+# baked into the image for convenience. For production, consider using Azure Key Vault
+# or injecting environment variables at runtime instead.
+
 on:
   # Runs on pushes targeting the main branch
   push:
@@ -35,3 +46,5 @@ jobs:
             ${{ secrets.ACR_LOGIN_SERVER }}/techworkshop:latest
           build-args: |
             ENV_CONTENT=${{ secrets.ENV }}
+          # Note: ENV secret should contain the complete multi-line .env file content
+          # See src/env_sample.txt for the expected format and required variables
