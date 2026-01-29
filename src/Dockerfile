@@ -24,7 +24,7 @@ COPY . .
 # Create .env file from build argument (for python-dotenv)
 # Using printf to safely handle multi-line content and special characters
 ARG ENV_CONTENT
-RUN printf '%s\n' "$ENV_CONTENT" > .env
+RUN printf '%s' "$ENV_CONTENT" > .env
 
 # Expose the port (default FastAPI/uvicorn port)
 EXPOSE 8000
